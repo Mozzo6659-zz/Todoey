@@ -10,12 +10,34 @@ import UIKit
 
 class TodolistViewController: UITableViewController {
 
-    let itemArray = ["Get bog roll","Get Apples","Fricking Avacodo"]
+    var itemArray = []
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
     }
 
+    //MARK - Add new ietms
+    
+    @IBAction func addItem(_ sender: UIBarButtonItem) {
+        
+        var userTextField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
+        
+        let alertAction = UIAlertAction(title: "Add Item", style: .default) {
+            (action) in
+            self.itemArray.append(userTextField.text!)
+            self.tableView.reloadData()
+        }
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create New Item"
+            userTextField = alertTextField
+        }
+        
+        alert.addAction(alertAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
     //MARK - Tableview shite
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
