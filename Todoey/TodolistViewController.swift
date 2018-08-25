@@ -10,23 +10,34 @@ import UIKit
 
 class TodolistViewController: UITableViewController {
 
-    var itemArray = []
+    
+    let defaults = UserDefaults.standard
+    
+    var itemArray = [String]()
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+            
+        }
     }
 
     //MARK - Add new ietms
     
     @IBAction func addItem(_ sender: UIBarButtonItem) {
         
-        var userTextField = UITextField()
+        var userTextField = UITextField() //module lel textfile used in the closure
         
         let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
         
         let alertAction = UIAlertAction(title: "Add Item", style: .default) {
             (action) in
+            
             self.itemArray.append(userTextField.text!)
+            
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            //print("Reloading")
             self.tableView.reloadData()
         }
         alert.addTextField { (alertTextField) in
@@ -54,6 +65,7 @@ class TodolistViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         
         cell.textLabel?.text = itemArray[indexPath.row]
+        //print(itemArray[indexPath.row])
         return cell
     }
     //MARK - Tableview delegate methinds
