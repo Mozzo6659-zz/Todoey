@@ -5,22 +5,26 @@
 //  Created by Mick Mossman on 24/8/18.
 //  Copyright © 2018 Mick Mossman. All rights reserved.
 //
-
+//This runs really slow n the cimulate and a"Unable to nsert copy_send" error appears
+//it works on a device
 import UIKit
 
 class TodolistViewController: UITableViewController {
 
     
-    let defaults = UserDefaults.standard
+    //let defaults = UserDefaults.standard
     
-    var itemArray = [String]()
+    var itemArray = [Item]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        //var item = Item("")
+        
         // Do any additional setup after loading the view, typically from a nib.
-        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-            itemArray = items
-            
-        }
+//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+//            itemArray = items
+//
+//        }
     }
 
     //MARK - Add new ietms
@@ -34,9 +38,13 @@ class TodolistViewController: UITableViewController {
         let alertAction = UIAlertAction(title: "Add Item", style: .default) {
             (action) in
             
-            self.itemArray.append(userTextField.text!)
+            //var item = Item(thetitle: userTextField.text!)
             
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            self.itemArray.append(Item(thetitle: userTextField.text!))
+            
+//            self.itemArray.append(userTextField.text!)
+//
+//            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             //print("Reloading")
             self.tableView.reloadData()
         }
@@ -64,21 +72,28 @@ class TodolistViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]
-        //print(itemArray[indexPath.row])
+        let item = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        cell.accessoryType = item.done ? .checkmark : .none
+        
         return cell
     }
     //MARK - Tableview delegate methinds
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //print(itemArray[indexPath.row])
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+       itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        tableView.deselectRow(at: indexPath, animated: true)
+       // item.done = !item.done
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        }else{
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
+        tableView.reloadData()
+       tableView.deselectRow(at: indexPath, animated: true)
+        
         
     }
 }
