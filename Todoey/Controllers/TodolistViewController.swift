@@ -15,9 +15,13 @@ class TodolistViewController: UITableViewController {
     //let defaults = UserDefaults.standard
     
     var itemArray = [Item]()
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        loadItems()
+        
         //var item = Item("")
         
         // Do any additional setup after loading the view, typically from a nib.
@@ -27,6 +31,21 @@ class TodolistViewController: UITableViewController {
 //        }
     }
 
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("No decode \(error)")
+            }
+            
+        }
+        
+        
+        
+    }
+    
     //MARK - Add new ietms
     
     @IBAction func addItem(_ sender: UIBarButtonItem) {
@@ -46,7 +65,8 @@ class TodolistViewController: UITableViewController {
 //
 //            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             //print("Reloading")
-            self.tableView.reloadData()
+            self.saveData()
+            
         }
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create New Item"
@@ -91,10 +111,23 @@ class TodolistViewController: UITableViewController {
 //        }else{
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //        }
-        tableView.reloadData()
+        saveData()
+        
        tableView.deselectRow(at: indexPath, animated: true)
         
         
+    }
+    
+    func saveData() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }catch {
+            print("Error encoding Item array")
+        }
+        tableView.reloadData()
     }
 }
 
