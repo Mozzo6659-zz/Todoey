@@ -8,19 +8,26 @@
 //This runs really slow n the cimulate and a"Unable to nsert copy_send" error appears
 //it works on a device
 import UIKit
+import CoreData
 
 class TodolistViewController: UITableViewController {
 
     
     //let defaults = UserDefaults.standard
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
     
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        loadItems()
+        //let request : NSFetchRequest<Item> = Item.fetchRequest()
+        //loadItems()
         
         //var item = Item("")
         
@@ -31,20 +38,7 @@ class TodolistViewController: UITableViewController {
 //        }
     }
 
-    func loadItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("No decode \(error)")
-            }
-            
-        }
-        
-        
-        
-    }
+    
     
     //MARK - Add new ietms
     
@@ -59,13 +53,20 @@ class TodolistViewController: UITableViewController {
             
             //var item = Item(thetitle: userTextField.text!)
             
-            self.itemArray.append(Item(thetitle: userTextField.text!))
             
-//            self.itemArray.append(userTextField.text!)
-//
-//            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            //print("Reloading")
+            let newItem = Item(context: self.context)
+            newItem.title = userTextField.text!
+            newItem.done = false
+            newItem.parentCategory = self.selectedCategory
+            //self.itemArray.append(Item(thetitle: userTextField.text!))
+            
+            //            self.itemArray.append(userTextField.text!)
+            //
+            //            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            print("Reloading")
             self.saveData()
+            self.loadItems()
+            self.tableView.reloadData()
             
         }
         alert.addTextField { (alertTextField) in
@@ -103,7 +104,13 @@ class TodolistViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //print(itemArray[indexPath.row])
+        
        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        //DELETION
+        //context.delete(itemArray[indexPath.row]) do this one first duh
+        //itemArray.remove(at: indexPath.row)
+        //END DELETION
         
        // item.done = !item.done
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
@@ -119,15 +126,69 @@ class TodolistViewController: UITableViewController {
     }
     
     func saveData() {
-        let encoder = PropertyListEncoder()
+        
         
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         }catch {
             print("Error encoding Item array")
         }
         tableView.reloadData()
     }
+    
+    func loadItems(with request : NSFetchRequest<Item> = Item.fetchRequest()) {
+        
+        
+        let pred = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if request.predicate != nil {
+            let compound:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [request.predicate!,pred])
+            request.predicate = compound
+        }else{
+            request.predicate = pred
+        }
+        
+        
+        do {
+            itemArray = try context.fetch(request)
+        }catch {
+            print("error on fetch \(error)")
+        }
+        
+        
+        
+        
+    }
 }
 
+extension TodolistViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        //google NSpredicate cheatsheet
+        //[cd] case and diacritic insensitive
+        
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.sortDescriptors?.append(NSSortDescriptor(key: "title", ascending: false))
+        
+        loadItems(with: request)
+
+        tableView.reloadData()
+         searchBar.resignFirstResponder()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            
+            loadItems()
+            
+            tableView.reloadData()
+            
+            DispatchQueue.main.async {
+                 searchBar.resignFirstResponder()
+            }
+           
+        }
+    }
+}
