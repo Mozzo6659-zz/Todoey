@@ -17,19 +17,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+       
+        //print(Realm.Configuration.defaultConfiguration.fileURL)
+        //print("the date is : \(Date())")
         // Override point for customization after application launch.
-        let data = Data()
-        data.name = "Mick"
-        data.age = 59
-        
-        do {
-            let realm = try Realm()
-            try realm.write {
-                realm.add(data)
-            }
-        } catch {
-            print("INitalise error \(error)")
-        }
+//        let data = Data()
+//        data.name = "Mick"
+//        data.age = 59
+//
+//        do {
+//            let realm = try Realm()
+//            try realm.write {
+//                realm.add(data)
+//            }
+//        } catch {
+//            print("INitalise error \(error)")
+//        }
         return true
     }
 
