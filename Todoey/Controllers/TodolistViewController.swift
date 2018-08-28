@@ -11,7 +11,7 @@ import UIKit
 //import CoreData
 import RealmSwift
 
-class TodolistViewController: UITableViewController {
+class TodolistViewController: SwipeTableViewController {
 
     
     
@@ -110,7 +110,8 @@ class TodolistViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        //let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
@@ -160,50 +161,29 @@ class TodolistViewController: UITableViewController {
         
     }
     
-//    func saveData(item:Item) {
-//
-//
-//
-//        do {
-//            //try context.save()
-//            try realm.write {
-//                realm.add(item)
-//            }
-//        }catch {
-//            print("Error encoding Item array")
-//        }
-//        tableView.reloadData()
-//    }
     
     func loadItems() {
         todoItems = selectedCategory?.items.sorted(byKeyPath:"title", ascending:true)
         
         tableView.reloadData()
     }
-//    func loadItems(with request : NSFetchRequest<Item> = Item.fetchRequest()) {
-//
-//
-//        let pred = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-//
-//        if request.predicate != nil {
-//            let compound:NSCompoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [request.predicate!,pred])
-//            request.predicate = compound
-//        }else{
-//            request.predicate = pred
-//        }
-//
-//
-//        do {
-//            itemArray = try context.fetch(request)
-//        }catch {
-//            print("error on fetch \(error)")
-//        }
-//
-//
-//
-//
-//    }
     
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = self.todoItems?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    
+                    self.realm.delete(item) //to delete from Realm
+                    self.loadItems()
+                    //self.tableView.reloadData()
+                }
+                
+            } catch {
+                print("Error updating: \(error)")
+            }
+        }
+    }
+
 }
 
 extension TodolistViewController: UISearchBarDelegate {

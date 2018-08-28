@@ -9,8 +9,9 @@
 import UIKit
 //import CoreData
 import RealmSwift
+//import SwipeCellKit removed becasue w are inheritn from SwipeTableViewController
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     
     
@@ -27,6 +28,8 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
 
         loadCategories()
+        
+        //tableView.rowHeight = 80.0
     }
 
     @IBAction func addCategory(_ sender: UIBarButtonItem) {
@@ -85,16 +88,21 @@ class CategoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        //let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
         
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
    
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No cats entered"
+        
+        //cell.delegate = self
         
         //cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
     }
     
+    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         performSegue(withIdentifier: "goToItems", sender: self)
@@ -113,7 +121,21 @@ class CategoryViewController: UITableViewController {
         }
     }
     //MARK: - Data manipulation methods
-    
+    override func updateModel(at indexPath: IndexPath) {
+        if let cat = self.categoryArray?[indexPath.row] {
+            do {
+                try self.realm.write {
+            
+                 self.realm.delete(cat) //to delete from Realm
+                    self.loadCategories()
+                 //self.tableView.reloadData()
+                }
+            
+              } catch {
+                print("Error updating: \(error)")
+              }
+            }
+    }
     
     func saveData(cat:Category) {
         
@@ -134,16 +156,7 @@ class CategoryViewController: UITableViewController {
         
         tableView.reloadData()
     }
-//    func loadCategories(with request : NSFetchRequest<Category> = Category.fetchRequest()) {
-//
-//        do {
-//            categoryArray = try context.fetch(request)
-//        }catch {
-//            print("error on fetch \(error)")
-//        }
-//
-//       tableView.reloadData()
-//
-//
-//    }
+
 }
+
+
