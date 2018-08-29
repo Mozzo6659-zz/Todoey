@@ -10,43 +10,69 @@
 import UIKit
 //import CoreData
 import RealmSwift
+import ChameleonFramework
 
 class TodolistViewController: SwipeTableViewController {
 
     
+    @IBOutlet weak var searchBar: UISearchBar!
     
     let realm = try! Realm()
+    var darkenkenpc : CGFloat = 2.0
     
     //disSet proc wll get executed when we set th selected catgeory from Categoryview controller
     var selectedCategory : Category? {
         didSet {
             loadItems()
+            
         }
     }
     
     var todoItems : Results<Item>?
     
-    //var itemArray = [Item]()
-    //let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
-    //let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        //let request : NSFetchRequest<Item> = Item.fetchRequest()
-        //loadItems()
         
-        //var item = Item("")
         
-        // Do any additional setup after loading the view, typically from a nib.
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//
-//        }
+        
     }
-
     
+    override func viewWillAppear(_ animated: Bool) {
+        guard let colourHex = selectedCategory?.backcolour else {fatalError("No backcolor")}
+        
+            title = selectedCategory?.name
+            
+        updateNavBar(withhexCode: colourHex)
+        
+            
+        
+    }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        updateNavBar(withhexCode: "6ED6FF")
+//        guard let origcolour = UIColor(hexString: "6ED6FF") else {fatalError("Fick off")}
+//        
+//        navigationController?.navigationBar.barTintColor = origcolour
+//        navigationController?.navigationBar.tintColor = FlatWhite()
+//        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : FlatWhite()]
+    }
     //MARK - Add new ietms
+    
+    func updateNavBar(withhexCode colourHexCode:String) {
+        guard let navbar = navigationController?.navigationBar else {fatalError("No Navbar")}
+        guard let navbarColour = UIColor(hexString:colourHexCode) else {fatalError("No nav colour")}
+        
+        searchBar.barTintColor = navbarColour
+        
+        navbar.tintColor = ContrastColorOf(navbarColour, returnFlat: true)
+        navbar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : ContrastColorOf(navbarColour, returnFlat: true)]
+        
+        navbar.barTintColor = navbarColour
+        
+    }
     
     @IBAction func addItem(_ sender: UIBarButtonItem) {
         
@@ -115,11 +141,23 @@ class TodolistViewController: SwipeTableViewController {
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
+            
+            if let catcolor = selectedCategory?.backcolour {
+                let cellcolour = UIColor(hexString: catcolor)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count))
+                cell.backgroundColor = cellcolour
+                cell.textLabel?.textColor = ContrastColorOf(cellcolour!, returnFlat: true)
+
+            }
+            
+            
         
+            //[color darkenByPercentage:(CGFloat)percentage];
+            //cell.backgroundColor = UIColor(hexString: (selectedCategory?.backcolour)!)?.darken(byPercentage: darkenkenpc)
             cell.accessoryType = item.done ? .checkmark : .none
         }else{
             cell.textLabel?.text = "No items found"
         }
+        darkenkenpc += 5.0
         return cell
     }
     //MARK - Tableview delegate methinds

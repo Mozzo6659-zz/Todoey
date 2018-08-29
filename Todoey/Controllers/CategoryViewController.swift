@@ -9,6 +9,8 @@
 import UIKit
 //import CoreData
 import RealmSwift
+import ChameleonFramework
+
 //import SwipeCellKit removed becasue w are inheritn from SwipeTableViewController
 
 class CategoryViewController: SwipeTableViewController {
@@ -51,7 +53,7 @@ class CategoryViewController: SwipeTableViewController {
         //Realm
         let category = Category()
         category.name = userTextField.text!
-        
+        category.backcolour = UIColor.randomFlat.hexValue()
         //using array of obects
         //self.itemArray.append(Item(thetitle: userTextField.text!))
         
@@ -91,9 +93,11 @@ class CategoryViewController: SwipeTableViewController {
         //let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
         
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
-   
-        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No cats entered"
         
+        cell.backgroundColor = UIColor(hexString: categoryArray?[indexPath.row].backcolour ?? "6ED6FF")
+            //UIColor(rgb:categoryArray?[indexPath.row].backcolour)
+        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No cats entered"
+        cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn:cell.backgroundColor!, isFlat:true)
         //cell.delegate = self
         
         //cell.accessoryType = item.done ? .checkmark : .none
